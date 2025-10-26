@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 fun InsightCard(
     title: String,
     value: String,
-    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = Modifier,

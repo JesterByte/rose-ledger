@@ -16,8 +16,11 @@ import java.util.Calendar
 /**
  * Represents the state of the Home screen.
  *
- * @param totalExpenses The total sum of expenses.
- * @param recentExpenses A list of the most recent expenses.
+ * @property monthlyTotal The total amount spent in the current month.
+ * @property recentExpenses The most recent 5 expenses.
+ * @property topCategory The category with the highest total amount spent.
+ * @property averageDailySpend The average amount spent per day.
+ * @property transactionCount The total number of transactions.
  */
 data class HomeUiState(
     val monthlyTotal: Double = 0.0,
