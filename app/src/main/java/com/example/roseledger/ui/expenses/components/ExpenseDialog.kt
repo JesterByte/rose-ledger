@@ -22,25 +22,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.roseledger.data.model.Category
+import com.example.roseledger.data.model.Expense
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddExpenseDialog(
+fun ExpenseDialog(
+    expenseToEdit: Expense? = null, // Optional expense for editing
     categories: List<Category>,
     onDismissRequest: () -> Unit,
-    onConfirm: (amount: Double, description: String, category: String) -> Unit
+    onConfirm: (amount: Double, description: String, category: String, date: Date) -> Unit
 ) {
-    var amount by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
-    var isAmountInvalid by remember { mutableStateOf(false) }
+    val isEditMode = expenseToEdit != null
+    val title = if (isEditMode) "Edit Expense" else "Add New Expense"
+    val confirmButtonText = if (isEditMode) "Save" else "Add"
 
+    // Use 'remember' with a key to re-initialize state when the expense changes
+    var amount by remember(expenseToEdit) { mutableStateOf(expenseToEdit?.amount?.toString() ?: "") }
+    var description by remember(expenseToEdit) { mutableStateOf(expenseToEdit?.description ?: "") }
+    var selectedCategory by remember(expenseToEdit) {
+        mutableStateOf(categories.find { it.name == expenseToEdit?.category })
+    }
+
+    var isAmountInvalid by remember { mutableStateOf(false) }
     var isCategoryDropdownExpanded by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf<Category?>(null) }
+
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text("Add New Expense") },
+        title = { Text(title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
@@ -101,13 +111,15 @@ fun AddExpenseDialog(
                     val finalCategory = selectedCategory
 
                     if (amountDouble != null && description.isNotBlank() && finalCategory != null) {
-                        onConfirm(amountDouble, description, finalCategory.name)
+                        // Pass back the original date in edit mode, or a new date in add mode
+                        val date = expenseToEdit?.date ?: Date()
+                        onConfirm(amountDouble, description, finalCategory.name, date)
                     } else {
                         isAmountInvalid = amountDouble == null
                     }
                 }
             ) {
-                Text("Add")
+                Text(confirmButtonText)
             }
         },
         dismissButton = {

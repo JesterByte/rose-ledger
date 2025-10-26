@@ -25,7 +25,7 @@ fun HomeScreen() {
     // Collect the UI state from the ViewModel. The UI will recompose when this state changes.
     val uiState by viewModel.uiState.collectAsState()
 
-    HomeScreenContent(uiState = uiState)
+    HomeScreenContent(uiState = uiState, onFilterChange = { viewModel.setDateFilter(it) } )
 }
 
 

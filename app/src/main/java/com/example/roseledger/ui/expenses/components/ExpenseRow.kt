@@ -1,5 +1,6 @@
 package com.example.roseledger.ui.expenses.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,13 +33,18 @@ import java.util.Locale
  * @param onDelete A lambda function to be called when the delete icon is clicked.
  */
 @Composable
-fun ExpenseRow(expense: Expense, onDelete: () -> Unit) {
+fun ExpenseRow(
+    expense: Expense,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
+) {
     val dateFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable { onEdit() }, // Make the whole card clickable
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(

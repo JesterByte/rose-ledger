@@ -21,7 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.roseledger.RoseLedgerApplication
-import com.example.roseledger.ui.expenses.components.AddExpenseDialog
+import com.example.roseledger.ui.expenses.components.ExpenseDialog
 import com.example.roseledger.ui.expenses.components.ExpenseRow
 import com.example.roseledger.ui.expenses.components.Header
 import com.example.roseledger.ui.expenses.components.SearchBar
@@ -43,7 +43,9 @@ fun ExpensesScreen() {
 
     val expenses by viewModel.expenses.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val isDialogVisible by viewModel.isAddExpenseDialogVisible.collectAsState()
+
+    val isAddExpenseDialogVisible by viewModel.isAddExpenseDialogVisible.collectAsState()
+    val editingExpense by viewModel.editingExpense.collectAsState()
 
     val categories by viewModel.categories.collectAsState()
 
@@ -54,24 +56,36 @@ fun ExpensesScreen() {
             }
         }
     ) { innerPadding ->
-        Column(modifier = Modifier
-            .padding(innerPadding)
-            .padding(16.dp)) {
-            // Show the dialog when the state is true
-            if (isDialogVisible) {
-                AddExpenseDialog(
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+
+            val showDialog = isAddExpenseDialogVisible || editingExpense != null
+            if (showDialog) {
+                ExpenseDialog(
+                    expenseToEdit = editingExpense, // Pass the expense to edit, or null for adding
                     categories = categories,
-                    onDismissRequest = { viewModel.hideAddExpenseDialog() },
-                    onConfirm = { amount, description, category ->
-                        viewModel.addExpense(amount, category, description)
+                    onDismissRequest = {
                         viewModel.hideAddExpenseDialog()
+                        viewModel.onEditDone() // Ensure both states can close the dialog
+                    },
+                    onConfirm = { amount, description, category, date ->
+                        if (editingExpense != null) {
+                            viewModel.updateExpense(editingExpense!!.id, amount, category, description, date)
+                        } else {
+                            viewModel.addExpense(amount, category, description)
+                        }
                     }
                 )
             }
 
             Spacer(Modifier.height(16.dp))
 
-            SearchBar(searchQuery = searchQuery, onValueChange = { viewModel.onSearchQueryChange(it) })
+            SearchBar(
+                searchQuery = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChange(it) })
             Header()
 
             // Expense List
@@ -88,7 +102,8 @@ fun ExpensesScreen() {
                     items(expenses, key = { it.id }) { expense ->
                         ExpenseRow(
                             expense = expense,
-                            onDelete = { viewModel.deleteExpense(expense.id) }
+                            onDelete = { viewModel.deleteExpense(expense.id) },
+                            onEdit = { viewModel.onEditExpense(expense) }
                         )
                     }
                 }

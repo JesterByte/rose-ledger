@@ -4,8 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.roseledger.data.repository.ExpenseRepository
+import com.example.roseledger.util.DateFilter
+import com.example.roseledger.util.DateUtils
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -17,7 +22,9 @@ import kotlinx.coroutines.flow.stateIn
  */
 data class HomeUiState(
     val totalExpenses: Double = 0.0,
-    val expensesByCategory: Map<String, Double> = emptyMap()
+    val expensesByCategory: Map<String, Double> = emptyMap(),
+    val currentFilter: DateFilter = DateFilter.MONTH,
+    val dateRangeLabel: String = ""
 )
 
 /**
@@ -28,26 +35,42 @@ data class HomeUiState(
  */
 class HomeViewModel(repository: ExpenseRepository) : ViewModel() {
 
-    // This StateFlow will hold the calculated summary data.
-    val uiState: StateFlow<HomeUiState> = repository.allExpenses
-        .map { expenses ->
-            // Calculate the total expenses by summing up the amounts
-            val total = expenses.sumOf { it.amount }
+    private val _currentFilter = MutableStateFlow(DateFilter.MONTH) // The current filter state.
 
-            // Group expenses by category and sum their amounts
-            val byCategory = expenses.groupBy { it.category }
-                .mapValues { entry ->  entry.value.sumOf { it.amount } }
+    // Combine the filter state with the database flow
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<HomeUiState> = _currentFilter
+        .flatMapLatest { filter ->
+            val (startDate, endDate) = DateUtils.getDateRange(filter)
+            // Use the appropriate repository function based on the filter
+            val expensesFlow = if (filter == DateFilter.ALL) {
+                repository.allExpenses
+            } else {
+                repository.getExpensesBetween(startDate, endDate)
+            }
 
-            // Create the UI stage object
-            HomeUiState(totalExpenses = total, expensesByCategory = byCategory)
-        }
-        .stateIn(
+            // Map the results to our UI state
+            expensesFlow.map { expenses ->
+                val total = expenses.sumOf { it.amount }
+                val byCategory = expenses.groupBy { it.category }
+                    .mapValues { entry -> entry.value.sumOf { it.amount } }
+
+                HomeUiState(
+                    totalExpenses = total,
+                    expensesByCategory = byCategory,
+                    currentFilter = filter,
+                    dateRangeLabel = DateUtils.getFormattedDateRange(filter)
+                )
+            }
+        }.stateIn(
             scope = viewModelScope,
-            // The flow starts when a collector is present and stops 5 seconds after the last collector disappears.
             started = SharingStarted.WhileSubscribed(5000L),
-            // The initial state while the data is loading.
-            initialValue = HomeUiState()
+            initialValue = HomeUiState() // Initial empty state
         )
+
+    fun setDateFilter(filter: DateFilter) {
+        _currentFilter.value = filter
+    }
 }
 
 /**

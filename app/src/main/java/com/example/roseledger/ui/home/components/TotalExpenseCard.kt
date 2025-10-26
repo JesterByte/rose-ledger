@@ -16,7 +16,10 @@ import androidx.compose.ui.unit.dp
 import com.example.roseledger.util.formatAmountWithCommas
 
 @Composable
-fun TotalExpenseCard(total: Double) {
+fun TotalExpenseCard(
+    total: Double,
+    dateRange: String
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -29,6 +32,12 @@ fun TotalExpenseCard(total: Double) {
             Text(
                 text = "Total Expenses",
                 style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            // Display the date range
+            Text(
+                text = dateRange,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(

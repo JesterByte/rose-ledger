@@ -22,8 +22,12 @@ import java.util.Date
  */
 class ExpensesViewModel(
     private val repository: ExpenseRepository,
-    categoryRepository: CategoryRepository
+    categoryRepository: CategoryRepository,
 ) : ViewModel() {
+
+    // State to hold the currently editing expense. Null means no expense is being edited.
+    private val _editingExpense = MutableStateFlow<Expense?>(null)
+    val editingExpense = _editingExpense.asStateFlow()
 
     // A private MutableStateFlow to hold the search query from the user.
     private val _searchQuery = MutableStateFlow("")
@@ -43,7 +47,10 @@ class ExpensesViewModel(
             expenses
         } else {
             expenses.filter {
-                it.description.contains(query, ignoreCase = true) || it.category.contains(query, ignoreCase = true)
+                it.description.contains(query, ignoreCase = true) || it.category.contains(
+                    query,
+                    ignoreCase = true
+                )
             }
         }
     }.stateIn(
@@ -60,6 +67,29 @@ class ExpensesViewModel(
      */
     fun onSearchQueryChange(newQuery: String) {
         _searchQuery.value = newQuery
+    }
+
+    fun onEditExpense(expense: Expense) {
+        _editingExpense.value = expense
+    }
+
+    fun onEditDone() {
+        _editingExpense.value = null
+    }
+
+    fun updateExpense(id: Int, amount: Double, category: String, description: String, date: Date) {
+        viewModelScope.launch {
+            repository.update(
+                Expense(
+                    id = id,
+                    amount = amount,
+                    category = category,
+                    description = description,
+                    date = date
+                )
+            )
+        }
+        onEditDone() // Close the dialog after updating
     }
 
     /**
@@ -115,7 +145,7 @@ class ExpensesViewModel(
  */
 class ExpensesViewModelFactory(
     private val expenseRepository: ExpenseRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ExpensesViewModel::class.java)) {

@@ -3,6 +3,7 @@ package com.example.roseledger.data.repository
 import com.example.roseledger.data.local.ExpenseDao
 import com.example.roseledger.data.model.Expense
 import kotlinx.coroutines.flow.Flow
+import java.util.Date
 
 /**
  * Repository that manages expense data operations.
@@ -19,6 +20,16 @@ class ExpenseRepository(private val expenseDao: ExpenseDao) {
     val allExpenses: Flow<List<Expense>> = expenseDao.getAllExpenses()
 
     /**
+     * Retrieves a list of expenses within a specified date range.
+     *
+     * @param startDate The start date of the date range.
+     * @param endDate The end date of the date range.
+     */
+    fun getExpensesBetween(startDate: Date, endDate: Date): Flow<List<Expense>> {
+        return expenseDao.getExpensesBetweenDates(startDate, endDate)
+    }
+
+    /**
      * Inserts a new expense into the database.
      * This is a suspend function, as it's an asynchronous operation.
      *
@@ -26,6 +37,15 @@ class ExpenseRepository(private val expenseDao: ExpenseDao) {
      */
     suspend fun insert(expense: Expense) {
         expenseDao.insertExpense(expense)
+    }
+
+    /**
+     * Updates an existing expense in the database.
+     *
+     * @param expense The updated expense data.
+     */
+    suspend fun update(expense: Expense) {
+        expenseDao.updateExpense(expense)
     }
 
     /**
