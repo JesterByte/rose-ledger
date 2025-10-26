@@ -71,14 +71,10 @@ fun HomeScreen() {
         ) {
             InsightCard(
                 title = "Top Category",
-                value = uiState.topCategory?.first ?: "N/A",
-                modifier = Modifier.weight(1f)
-            )
+                value = uiState.topCategory?.first ?: "N/A")
             InsightCard(
                 title = "Avg. Daily Spend",
-                value = formatAmountWithCommas(uiState.averageDailySpend),
-                modifier = Modifier.weight(1f)
-            )
+                value = formatAmountWithCommas(uiState.averageDailySpend))
         }
 
         Spacer(Modifier.height(8.dp))
