@@ -6,10 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.roseledger.data.model.Expense
 import com.example.roseledger.data.repository.CategoryRepository
 import com.example.roseledger.data.repository.ExpenseRepository
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -24,6 +26,10 @@ class ExpensesViewModel(
     private val repository: ExpenseRepository,
     categoryRepository: CategoryRepository,
 ) : ViewModel() {
+
+    // Add a Channel for side affects
+    private val _uiEffects = Channel<UiEffect>()
+    val uiEffects = _uiEffects.receiveAsFlow()
 
     // State to hold the currently editing expense. Null means no expense is being edited.
     private val _editingExpense = MutableStateFlow<Expense?>(null)
@@ -77,6 +83,10 @@ class ExpensesViewModel(
         _editingExpense.value = null
     }
 
+    fun onAddDone() {
+        _isAddExpenseDialogVisible.value = false
+    }
+
     fun updateExpense(id: Int, amount: Double, category: String, description: String, date: Date) {
         viewModelScope.launch {
             repository.update(
@@ -88,6 +98,8 @@ class ExpensesViewModel(
                     date = date
                 )
             )
+            // Send scroll-to-top effect
+            _uiEffects.send(UiEffect.ScrollToTop)
         }
         onEditDone() // Close the dialog after updating
     }
@@ -105,7 +117,9 @@ class ExpensesViewModel(
                     date = Date() // Uses the current date
                 )
             )
+            _uiEffects.send(UiEffect.ScrollToTop)
         }
+        onAddDone()
     }
 
     /**
@@ -139,6 +153,10 @@ class ExpensesViewModel(
         )
 }
 
+// Sealed class to define possible UI side effects
+sealed class UiEffect {
+    data object ScrollToTop : UiEffect()
+}
 
 /**
  * Factory for creating an instance of ExpensesViewModel with a repository dependency.

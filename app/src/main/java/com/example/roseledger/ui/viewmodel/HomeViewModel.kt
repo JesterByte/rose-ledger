@@ -3,74 +3,70 @@ package com.example.roseledger.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.roseledger.data.model.Expense
 import com.example.roseledger.data.repository.ExpenseRepository
 import com.example.roseledger.util.DateFilter
 import com.example.roseledger.util.DateUtils
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.util.Calendar
 
 /**
  * Represents the state of the Home screen.
  *
- * @param totalExpenses The total monetary value of all expenses.
- * @param expensesByCategory A map where keys are category names and values are the sum of expenses for that category.
+ * @param totalExpenses The total sum of expenses.
+ * @param recentExpenses A list of the most recent expenses.
  */
 data class HomeUiState(
-    val totalExpenses: Double = 0.0,
-    val expensesByCategory: Map<String, Double> = emptyMap(),
-    val currentFilter: DateFilter = DateFilter.MONTH,
-    val dateRangeLabel: String = ""
+    val monthlyTotal: Double = 0.0,
+    val recentExpenses: List<Expense> = emptyList(),
+    val topCategory: Pair<String, Double>? = null,
+    val averageDailySpend: Double = 0.0,
+    val transactionCount: Int = 0
 )
 
 /**
- * ViewModel for the Home (Dashboard) screen.
+ * ViewModel for the Home screen.
  * It processes expense data to create a summary for the UI.
  *
  * @param repository The repository for accessing expense data.
  */
 class HomeViewModel(repository: ExpenseRepository) : ViewModel() {
 
-    private val _currentFilter = MutableStateFlow(DateFilter.MONTH) // The current filter state.
+    val uiState: StateFlow<HomeUiState> = repository
+        .getExpensesBetween(
+            DateUtils.getDateRange(DateFilter.MONTH).first,
+            DateUtils.getDateRange(DateFilter.MONTH).second
+        )
+        .map { monthlyExpenses ->
+            val monthlyTotal = monthlyExpenses.sumOf { it.amount }
 
-    // Combine the filter state with the database flow
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<HomeUiState> = _currentFilter
-        .flatMapLatest { filter ->
-            val (startDate, endDate) = DateUtils.getDateRange(filter)
-            // Use the appropriate repository function based on the filter
-            val expensesFlow = if (filter == DateFilter.ALL) {
-                repository.allExpenses
-            } else {
-                repository.getExpensesBetween(startDate, endDate)
-            }
+            val topCategory = monthlyExpenses
+                .groupBy { it.category }
+                .mapValues { entry -> entry.value.sumOf { it.amount } }
+                .maxByOrNull { it.value }
+                ?.toPair()
 
-            // Map the results to our UI state
-            expensesFlow.map { expenses ->
-                val total = expenses.sumOf { it.amount }
-                val byCategory = expenses.groupBy { it.category }
-                    .mapValues { entry -> entry.value.sumOf { it.amount } }
+            val calendar = Calendar.getInstance()
+            val currentDayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
+            val averageDailySpend = monthlyTotal / currentDayOfMonth
+            val transactionCount = monthlyExpenses.size
 
-                HomeUiState(
-                    totalExpenses = total,
-                    expensesByCategory = byCategory,
-                    currentFilter = filter,
-                    dateRangeLabel = DateUtils.getFormattedDateRange(filter)
-                )
-            }
-        }.stateIn(
+            HomeUiState(
+                monthlyTotal = monthlyExpenses.sumOf { it.amount },
+                recentExpenses = monthlyExpenses.take(5),
+                topCategory = topCategory,
+                averageDailySpend = averageDailySpend,
+                transactionCount = transactionCount
+            )
+        }
+        .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000L),
             initialValue = HomeUiState() // Initial empty state
         )
-
-    fun setDateFilter(filter: DateFilter) {
-        _currentFilter.value = filter
-    }
 }
 
 /**

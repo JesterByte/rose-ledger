@@ -5,8 +5,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.roseledger.ui.about.AboutScreen
 import com.example.roseledger.ui.expenses.ExpensesScreen
 import com.example.roseledger.ui.home.HomeScreen
+import com.example.roseledger.ui.reports.ReportsScreen
 import com.example.roseledger.ui.settings.SettingsScreen
 
 @Composable
@@ -25,8 +27,14 @@ fun AppNavHost(
         composable(AppDestinations.EXPENSES.route) {
             ExpensesScreen()
         }
+        composable(AppDestinations.REPORTS.route) {
+            ReportsScreen()
+        }
         composable(AppDestinations.SETTINGS.route) {
             SettingsScreen()
+        }
+        composable(AppDestinations.ABOUT.route) {
+            AboutScreen()
         }
     }
 }

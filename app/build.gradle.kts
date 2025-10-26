@@ -64,6 +64,9 @@ dependencies {
 
     implementation(libs.androidx.datastore.preferences)
 
+    implementation(libs.vico.core)
+    implementation(libs.vico.compose.m3)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

@@ -1,4 +1,4 @@
-package com.example.roseledger.ui.home.components
+package com.example.roseledger.ui.reports.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CategorySummaryCard(categories: Map<String, Double>) {
+fun CategorySummaryCard(categories: Map<String, Double>, totalExpenses: Double) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -38,7 +38,12 @@ fun CategorySummaryCard(categories: Map<String, Double>) {
                 val sortedCategories = categories.entries.sortedByDescending { it.value }
 
                 sortedCategories.forEach { (category, amount) ->
-                    CategoryRow(category = category, amount = amount)
+                    val percentage = if (totalExpenses > 0) (amount / totalExpenses).toFloat() else 0f
+                    CategoryRow(
+                        category = category,
+                        amount = amount,
+                        percentage = percentage
+                    )
                 }
             }
         }

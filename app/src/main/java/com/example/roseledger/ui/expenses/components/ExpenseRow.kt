@@ -36,7 +36,8 @@ import java.util.Locale
 fun ExpenseRow(
     expense: Expense,
     onDelete: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    displayButton: Boolean = false,
 ) {
     val dateFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
 
@@ -78,14 +79,17 @@ fun ExpenseRow(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold
                 )
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete Expense",
-                        tint = MaterialTheme.colorScheme.error
-                    )
+                if (displayButton) {
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Expense",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
+
         }
     }
 }

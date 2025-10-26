@@ -2,7 +2,9 @@ package com.example.roseledger.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -17,7 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 enum class AppDestinations(
     val route: String,
     val label: String,
-    val icon: ImageVector
+    val icon: ImageVector,
 ) {
     HOME(
         route = "home",
@@ -29,9 +31,19 @@ enum class AppDestinations(
         label = "Expenses",
         icon = Icons.AutoMirrored.Filled.List
     ),
+    REPORTS(
+        route = "reports",
+        label = "Reports",
+        icon = Icons.Default.Assessment
+    ),
     SETTINGS(
         route = "settings",
         label = "Settings",
         icon = Icons.Default.Settings
+    ),
+    ABOUT(
+        route = "about",
+        label = "About",
+        icon = Icons.Default.Info
     )
 }

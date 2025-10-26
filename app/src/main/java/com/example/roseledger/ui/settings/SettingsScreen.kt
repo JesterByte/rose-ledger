@@ -2,31 +2,18 @@ package com.example.roseledger.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.roseledger.RoseLedgerApplication
-import com.example.roseledger.data.model.Category
 import com.example.roseledger.ui.settings.components.CategoryManagementSection
 import com.example.roseledger.ui.settings.components.ThemeSelectionRow
 import com.example.roseledger.ui.viewmodel.SettingsViewModel
@@ -51,17 +38,10 @@ fun SettingsScreen() {
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         item {
-            Column {
-                Text(
-                    text = "Settings",
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                ThemeSelectionRow(
-                    currentSetting = themeSetting,
-                    onSettingSelected = { viewModel.setTheme(it) }
-                )
-            }
+            ThemeSelectionRow(
+                currentSetting = themeSetting,
+                onSettingSelected = { viewModel.setTheme(it) }
+            )
         }
 
         item {
