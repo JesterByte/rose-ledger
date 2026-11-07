@@ -87,4 +87,4 @@ This project showcases modern Android development practices and leverages a suit
 
 1. **Clone** the repository  
    ```bash
-   git clone https://github.com/<your-username>/rose-ledger.git
+   git clone https://github.com/JesterByte/rose-ledger.git
